@@ -16,7 +16,7 @@ public:
 	float		        m_interp_amt;
 	int	                m_frame_simulation_ticks;
 	int				    m_network_protocol;
-	CSaveRestoreData*   m_save_data;
+	CSaveRestoreData* m_save_data;
 private:
 	bool			    m_client;
 	bool		        m_remote_client;

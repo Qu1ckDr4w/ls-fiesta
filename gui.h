@@ -11,16 +11,16 @@ public:
 	Color m_color{ colors::white };
 
 public:
-	void think( );
-	void draw( );
+	void think();
+	void draw();
 
 	// registers a new form.
-	__forceinline void RegisterForm( Form* form, int key = -1 ) {
+	__forceinline void RegisterForm(Form* form, int key = -1) {
 		// set key to toggle form.
-		form->SetToggle( key );
+		form->SetToggle(key);
 
 		// add form to our container.
-		m_forms.push_back( form );
+		m_forms.push_back(form);
 	}
 };
 
@@ -38,14 +38,14 @@ public:
 	std::string				 m_buffer;
 
 public:
-	__forceinline void update( ) {
+	__forceinline void update() {
 		// iterate all keys.
-		for( int i{}; i <= 254; ++i ) {
-			key_t* key = &m_keys[ i ];
+		for (int i{}; i <= 254; ++i) {
+			key_t* key = &m_keys[i];
 
 			key->pressed = false;
 
-			if( key->down && key->tick > key->oldtick ) {
+			if (key->down && key->tick > key->oldtick) {
 				key->oldtick = key->tick;
 				key->pressed = true;
 			}
@@ -53,41 +53,41 @@ public:
 	}
 
 	// mouse within coords.
-	__forceinline bool IsCursorInBounds( int x, int y, int x2, int y2 ) const {
+	__forceinline bool IsCursorInBounds(int x, int y, int x2, int y2) const {
 		return m_mouse.x > x && m_mouse.y > y && m_mouse.x < x2 && m_mouse.y < y2;
 	}
 
 	// mouse within rectangle.
-	__forceinline bool IsCursorInRect( Rect area ) const {
-		return IsCursorInBounds( area.x, area.y, area.x + area.w, area.y + area.h );
+	__forceinline bool IsCursorInRect(Rect area) const {
+		return IsCursorInBounds(area.x, area.y, area.x + area.w, area.y + area.h);
 	}
 
-	__forceinline void SetDown( int vk ) {
-		key_t* key = &m_keys[ vk ];
+	__forceinline void SetDown(int vk) {
+		key_t* key = &m_keys[vk];
 
 		key->down = true;
-		key->tick = g_winapi.GetTickCount( );
+		key->tick = g_winapi.GetTickCount();
 	}
 
-	__forceinline void SetUp( int vk ) {
-		key_t* key = &m_keys[ vk ];
-		key->down    = false;
+	__forceinline void SetUp(int vk) {
+		key_t* key = &m_keys[vk];
+		key->down = false;
 	}
 
 	// key is being held.
-	__forceinline bool GetKeyState( int vk ) {
-		if( vk == -1 )
+	__forceinline bool GetKeyState(int vk) {
+		if (vk == -1)
 			return false;
 
-		return m_keys[ vk ].down;
+		return m_keys[vk].down;
 	}
 
 	// key was pressed.
-	__forceinline bool GetKeyPress( int vk ) {
-		if( vk == -1 )
+	__forceinline bool GetKeyPress(int vk) {
+		if (vk == -1)
 			return false;
 
-		key_t* key = &m_keys[ vk ];
+		key_t* key = &m_keys[vk];
 		return key->pressed;
 	}
 };

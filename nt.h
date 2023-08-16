@@ -15,13 +15,13 @@ typedef struct _OBJECT_ATTRIBUTES {
 	PVOID SecurityDescriptor;
 	PVOID SecurityQualityOfService;
 } OBJECT_ATTRIBUTES;
-typedef OBJECT_ATTRIBUTES *POBJECT_ATTRIBUTES;
+typedef OBJECT_ATTRIBUTES* POBJECT_ATTRIBUTES;
 
 using NTSTATUS = LONG;
 
 #define NT_SUCCESS(x) ((x)>=0)
 
-typedef NTSTATUS( __stdcall* NtCreateThreadEx_t )(
+typedef NTSTATUS(__stdcall* NtCreateThreadEx_t)(
 	OUT PHANDLE ThreadHandle,
 	IN ACCESS_MASK DesiredAccess,
 	IN OPTIONAL POBJECT_ATTRIBUTES ObjectAttributes,
@@ -35,4 +35,4 @@ typedef NTSTATUS( __stdcall* NtCreateThreadEx_t )(
 	IN OPTIONAL LPVOID AttributeList
 	);
 
-typedef NTSTATUS( __stdcall* NtClose_t )( HANDLE );
+typedef NTSTATUS(__stdcall* NtClose_t)(HANDLE);

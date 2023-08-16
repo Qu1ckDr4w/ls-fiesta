@@ -15,15 +15,16 @@ public:
 	bool   m_invert;
 
 public:
-	void JumpRelated( );
-	void Strafe( );
-	void DoPrespeed( );
-	bool GetClosestPlane( vec3_t& plane );
-	bool WillCollide( float time, float step );
-	void FixMove( CUserCmd* cmd, const ang_t& old_angles );
-	void AutoPeek( );
-	void QuickStop( );
-	void FakeWalk( );
+	void JumpRelated();
+	void Strafe();
+	void DoPrespeed();
+	bool GetClosestPlane(vec3_t& plane);
+	bool WillCollide(float time, float step);
+	void FixMove(CUserCmd* cmd, const ang_t& old_angles);
+	void AutoPeek();
+	void QuickStop();
+	void AutoStop();
+	void FakeWalk();
 };
 
 extern Movement g_movement;

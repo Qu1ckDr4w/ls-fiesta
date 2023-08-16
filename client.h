@@ -7,8 +7,8 @@ public:
 	int   m_seq;
 
 public:
-	__forceinline Sequence( ) : m_time{}, m_state{}, m_seq{} {};
-	__forceinline Sequence( float time, int state, int seq ) : m_time{ time }, m_state{ state }, m_seq{ seq } {};
+	__forceinline Sequence() : m_time{}, m_state{}, m_seq{} {};
+	__forceinline Sequence(float time, int state, int seq) : m_time{ time }, m_state{ state }, m_seq{ seq } {};
 };
 
 class NetPos {
@@ -17,40 +17,52 @@ public:
 	vec3_t m_pos;
 
 public:
-	__forceinline NetPos( ) : m_time{}, m_pos{} {};
-	__forceinline NetPos( float time, vec3_t pos ) : m_time{ time }, m_pos{ pos } {};
+	__forceinline NetPos() : m_time{}, m_pos{} {};
+	__forceinline NetPos(float time, vec3_t pos) : m_time{ time }, m_pos{ pos } {};
 };
 
 class Client {
 public:
 	// hack thread.
-	static ulong_t __stdcall init( void* arg );
+	static ulong_t __stdcall init(void* arg);
 
-	void StartMove( CUserCmd* cmd );
-	void EndMove( CUserCmd* cmd );
-	void BackupPlayers( bool restore );
-	void DoMove( );
-	void DrawHUD( );
-	void UpdateInformation( );
-	void SetAngles( );
-	void UpdateAnimations( );
-	void KillFeed( );
+	void UnlockHiddenConvars();
+	void Clantag();
+	void ThirdPerson();
+	void StartMove(CUserCmd* cmd);
+	void EndMove(CUserCmd* cmd);
+	void BackupPlayers(bool restore);
+	void DoMove();
+	void DrawHUD();
+	void UpdateInformation();
+	void SetAngles();
+	void UpdateAnimations();
+	void KillFeed();
 
-	void OnPaint( );
-	void OnMapload( );
-	void OnTick( CUserCmd* cmd );
+	void OnPaint();
+	void OnMapload();
+	void OnTick(CUserCmd* cmd);
 
 	// debugprint function.
-	void print( const std::string text, ... );
+	void print(const std::string text, ...);
 
 	// check if we are able to fire this tick.
-	bool CanFireWeapon( );
-	void UpdateRevolverCock( );
-	void UpdateIncomingSequences( );
+	bool CanFireWeapon();
+	void UpdateRevolverCock();
+	void UpdateIncomingSequences();
+	int GetNextUpdate() const;
+	void MouseFix(CUserCmd* cmd);
+
+public:
+	struct incoming_seq_t {
+		std::ptrdiff_t m_in_seq{}, m_in_rel_state{};
+	};
+
+	std::vector < incoming_seq_t > m_inc_seq{};
 
 public:
 	// local player variables.
-	Player*          m_local;
+	Player* m_local;
 	bool	         m_processing;
 	int	             m_flags;
 	vec3_t	         m_shoot_pos;
@@ -58,10 +70,11 @@ public:
 	bool	         m_shot;
 	bool	         m_old_shot;
 	float            m_abs_yaw;
-	float            m_poses[ 24 ];
+	float            m_poses[24];
+	ang_t            m_real_angle;
 
 	// active weapon variables.
-	Weapon*     m_weapon;
+	Weapon* m_weapon;
 	int         m_weapon_id;
 	WeaponInfo* m_weapon_info;
 	int         m_weapon_type;
@@ -78,8 +91,8 @@ public:
 	int	     m_max_lag;
 	int      m_lag;
 	int	     m_old_lag;
-	bool*    m_packet;
-	bool*    m_final_packet;
+	bool* m_packet;
+	bool* m_final_packet;
 	bool	 m_old_packet;
 	float	 m_lerp;
 	float    m_latency;
@@ -92,12 +105,13 @@ public:
 	CUserCmd* m_cmd;
 	int	      m_tick;
 	int	      m_buttons;
+	bool	  m_pressing_move;
 	int       m_old_buttons;
 	ang_t     m_view_angles;
 	ang_t	  m_strafe_angles;
 	vec3_t	  m_forward_dir;
 
-    penetration::PenetrationOutput_t m_pen_data;
+	penetration::PenetrationOutput_t m_pen_data;
 
 	std::deque< Sequence > m_sequences;
 	std::deque< NetPos >   m_net_pos;
@@ -113,7 +127,7 @@ public:
 	float  m_anim_frame;
 	bool   m_ground;
 	bool   m_lagcomp;
-	
+
 	// hack username.
 	std::string m_user;
 };

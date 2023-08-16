@@ -18,7 +18,7 @@ public:
 	bool        m_custom_view_matrix;	// 0x0034
 	matrix3x4_t m_custom_matrix;		// 0x0038
 private:
-	PAD( 0x48 );						// 0x0068
+	PAD(0x48);						// 0x0068
 public:
 	float       m_fov;                  // 0x00B0
 	float       m_viewmodel_fov;		// 0x00B4
@@ -52,10 +52,10 @@ public:
 class IClientMode {
 public:
 	enum indices : size_t {
-		SHOULDDRAWPARTICLES      = 16,
-		SHOULDDRAWFOG            = 17,
-		OVERRIDEVIEW             = 18,
-		CREATEMOVE               = 24,
+		SHOULDDRAWPARTICLES = 16,
+		SHOULDDRAWFOG = 17,
+		OVERRIDEVIEW = 18,
+		CREATEMOVE = 24,
 		DOPOSTSPACESCREENEFFECTS = 44,
 	};
 };

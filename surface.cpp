@@ -16,45 +16,32 @@
 	//	h = 50;
 }*/
 
-void Hooks::LockCursor( ) {
-	if( g_gui.m_open ) {
-
+void Hooks::LockCursor() {
+	if (g_gui.m_open) {
 		// un-lock the cursor.
-		g_csgo.m_surface->UnlockCursor( );
+		g_csgo.m_surface->UnlockCursor();
 
 		// disable input.
-		g_csgo.m_input_system->EnableInput( false );
+		g_csgo.m_input_system->EnableInput(false);
 	}
 
 	else {
 		// call the original.
-		g_hooks.m_surface.GetOldMethod< LockCursor_t >( ISurface::LOCKCURSOR )( this );
+		g_hooks.m_surface.GetOldMethod< LockCursor_t >(ISurface::LOCKCURSOR)(this);
 
 		// enable input.
-		g_csgo.m_input_system->EnableInput( true );
+		g_csgo.m_input_system->EnableInput(true);
 	}
 }
 
-void Hooks::PlaySound( const char* name ) {
-	g_hooks.m_surface.GetOldMethod< PlaySound_t >( ISurface::PLAYSOUND )( this, name );
-
-	if( g_menu.main.misc.autoaccept.get( ) ) {
-
-		// auto accept.
-		if( FNV1a::get( name ) == HASH( "!UI/competitive_accept_beep.wav" ) && !g_csgo.m_engine->IsInGame( ) ) {
-			// accept match.
-			g_csgo.IsReady( );
-
-			// notify user.
-			g_csgo.m_surface->PlaySound( XOR( "ui/xp_levelup.wav" ) );
-		}
-	}
+void Hooks::PlaySound(const char* name) {
+	g_hooks.m_surface.GetOldMethod< PlaySound_t >(ISurface::PLAYSOUND)(this, name);
 }
 
-void Hooks::OnScreenSizeChanged( int oldwidth, int oldheight ) {
-	g_hooks.m_surface.GetOldMethod< OnScreenSizeChanged_t >( ISurface::ONSCREENSIZECHANGED )( this, oldwidth, oldheight );
+void Hooks::OnScreenSizeChanged(int oldwidth, int oldheight) {
+	g_hooks.m_surface.GetOldMethod< OnScreenSizeChanged_t >(ISurface::ONSCREENSIZECHANGED)(this, oldwidth, oldheight);
 
-	render::init( );
+	render::init();
 
-	Visuals::ModulateWorld( );
+	Visuals::ModulateWorld();
 }

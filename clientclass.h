@@ -7,13 +7,13 @@ class RecvTable;
 
 // prototypes.
 // these are networkable entity ptrs.
-using CreateClientClass_t = void*( __cdecl* )( int index, int serial );
-using CreateEvent_t       = void*( __cdecl* )( );
+using CreateClientClass_t = void* (__cdecl*)(int index, int serial);
+using CreateEvent_t = void* (__cdecl*)();
 
 // other prototypes.
-using ArrayLengthRecvProxy_t  = void( __cdecl* )( void* ptr, int id, int len );
-using RecvVarProxy_t          = void( __cdecl* )( CRecvProxyData* data, void* struct_ptr, void* out );
-using DataTableRecvVarProxy_t = void( __cdecl* )( RecvProp* prop, void** out, void* data, int id );
+using ArrayLengthRecvProxy_t = void(__cdecl*)(void* ptr, int id, int len);
+using RecvVarProxy_t = void(__cdecl*)(CRecvProxyData* data, void* struct_ptr, void* out);
+using DataTableRecvVarProxy_t = void(__cdecl*)(RecvProp* prop, void** out, void* data, int id);
 
 // types of props.
 enum SendPropType {
@@ -27,29 +27,29 @@ enum SendPropType {
 
 class RecvProp {
 public:
-	char					*m_pVarName;
+	char* m_pVarName;
 	int						 m_RecvType;
 	int						 m_Flags;
 	int						 m_StringBufferSize;
 	bool					 m_bInsideArray;
-	const void*				 m_pExtraData;
-	RecvProp				*m_pArrayProp;
+	const void* m_pExtraData;
+	RecvProp* m_pArrayProp;
 	ArrayLengthRecvProxy_t	 m_ArrayLengthProxy;
 	RecvVarProxy_t			 m_ProxyFn;
 	DataTableRecvVarProxy_t	 m_DataTableProxyFn;
-	RecvTable				*m_pDataTable;
+	RecvTable* m_pDataTable;
 	int						 m_Offset;
 	int						 m_ElementStride;
 	int						 m_nElements;
-	const char				*m_pParentArrayPropName;
+	const char* m_pParentArrayPropName;
 };
 
 class RecvTable {
 public:
-	RecvProp		*m_pProps;
+	RecvProp* m_pProps;
 	int				 m_nProps;
-	void*			 m_pDecoder;
-	char			*m_pNetTableName;
+	void* m_pDecoder;
+	char* m_pNetTableName;
 	bool			 m_bInitialized;
 	bool			 m_bInMainList;
 };
@@ -58,9 +58,9 @@ class ClientClass {
 public:
 	CreateClientClass_t m_pCreate;
 	CreateEvent_t	    m_pCreateEvent;
-	char*				m_pNetworkName;
-	RecvTable*			m_pRecvTable;
-	ClientClass*		m_pNext;
+	char* m_pNetworkName;
+	RecvTable* m_pRecvTable;
+	ClientClass* m_pNext;
 	int					m_ClassID;
 };
 
@@ -69,9 +69,9 @@ public:
 	union {
 		float	     m_Float;
 		long	     m_Int;
-		char		*m_pString;
-		void		*m_pData;
-		float	     m_Vector[ 3 ];
+		char* m_pString;
+		void* m_pData;
+		float	     m_Vector[3];
 		long long	 m_Int64;
 	};
 
@@ -80,7 +80,7 @@ public:
 
 class CRecvProxyData {
 public:
-	const RecvProp	*m_pRecvProp;
+	const RecvProp* m_pRecvProp;
 	DVariant		 m_Value;
 	int				 m_iElement;
 	int				 m_ObjectID;

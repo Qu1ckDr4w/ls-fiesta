@@ -17,13 +17,13 @@ struct PEB_LDR_DATA {
 struct UNICODE_STRING {
 	uint16_t	Length;
 	uint16_t	MaximumLength;
-	wchar_t		*Buffer;
+	wchar_t* Buffer;
 };
 
 struct STRING {
 	uint16_t	Length;
 	uint16_t	MaximumLength;
-	char		*Buffer;
+	char* Buffer;
 };
 
 struct CURDIR {
@@ -66,7 +66,7 @@ struct RTL_USER_PROCESS_PARAMETERS {
 	UNICODE_STRING				DesktopInfo;
 	UNICODE_STRING				ShellInfo;
 	UNICODE_STRING				RuntimeData;
-	RTL_DRIVE_LETTER_CURDIR		CurrentDirectores[ 32 ];
+	RTL_DRIVE_LETTER_CURDIR		CurrentDirectores[32];
 	uintptr_t					EnvironmentSize;
 	uintptr_t					EnvironmentVersion;
 	uintptr_t					PackageDependencyData;
@@ -75,9 +75,9 @@ struct RTL_USER_PROCESS_PARAMETERS {
 };
 
 struct RTL_BALANCED_NODE {
-	RTL_BALANCED_NODE	*Children[ 2 ];
-	RTL_BALANCED_NODE	*Left;
-	RTL_BALANCED_NODE	*Right;
+	RTL_BALANCED_NODE* Children[2];
+	RTL_BALANCED_NODE* Left;
+	RTL_BALANCED_NODE* Right;
 	uintptr_t			ParentValue;
 };
 
@@ -89,24 +89,24 @@ struct _PEB {
 	//uchar							Padding0[ 4 ];
 	uintptr_t						Mutant;
 	uintptr_t						ImageBaseAddress;
-	PEB_LDR_DATA					*Ldr;
-	RTL_USER_PROCESS_PARAMETERS		*ProcessParameters;
+	PEB_LDR_DATA* Ldr;
+	RTL_USER_PROCESS_PARAMETERS* ProcessParameters;
 	uintptr_t						SubSystemData;
 	uintptr_t						ProcessHeap;
-	RTL_CRITICAL_SECTION			*FastPebLock;
+	RTL_CRITICAL_SECTION* FastPebLock;
 	uintptr_t						AtlThunkSListPtr;
 	uintptr_t						IFEOKey;
 	uint32_t						CrossProcessFlags;
-	uint8_t							Padding1[ 4 ];
+	uint8_t							Padding1[4];
 	uintptr_t						KernelCallbackTable;
 	uintptr_t						UserSharedInfoPtr;
-	uint32_t						SystemReserved[ 1 ];
+	uint32_t						SystemReserved[1];
 	uint32_t						AtlThunkSListPtr32;
 	uintptr_t						ApiSetMap;
 	uint32_t						TlsExpansionCounter;
-	uint8_t							Padding2[ 4 ];
+	uint8_t							Padding2[4];
 	uintptr_t						TlsBitmap;
-	uint32_t						TlsBitmapBits[ 2 ];
+	uint32_t						TlsBitmapBits[2];
 	uintptr_t						ReadOnlySharedMemoryBase;
 	uintptr_t						SparePvoid0;
 	uintptr_t						ReadOnlyStaticServerData;
@@ -126,8 +126,8 @@ struct _PEB {
 	uintptr_t						GdiSharedHandleTable;
 	uintptr_t						ProcessStarterHelper;
 	uint32_t						GdiDCAttributeList;
-	uint8_t							Padding3[ 4 ];
-	RTL_CRITICAL_SECTION			*LoaderLock;
+	uint8_t							Padding3[4];
+	RTL_CRITICAL_SECTION* LoaderLock;
 	uint32_t						OSMajorVersion;
 	uint32_t						OSMinorVersion;
 	uint16_t						OSBuildNumber;
@@ -136,18 +136,18 @@ struct _PEB {
 	uint32_t						ImageSubsystem;
 	uint32_t						ImageSubsystemMajorVersion;
 	uint32_t						ImageSubsystemMinorVersion;
-	uint8_t							Padding4[ 4 ];
+	uint8_t							Padding4[4];
 	uintptr_t						ActiveProcessAffinityMask;
 #ifdef _WIN32
-	uint32_t						GdiHandleBuffer[ 34 ];
+	uint32_t						GdiHandleBuffer[34];
 #else
-	uint32_t						GdiHandleBuffer[ 60 ];
+	uint32_t						GdiHandleBuffer[60];
 #endif
 	uintptr_t						PostProcessInitRoutine;
 	uintptr_t						TlsExpansionBitmap;
-	uint32_t						TlsExpansionBitmapBits[ 32 ];
+	uint32_t						TlsExpansionBitmapBits[32];
 	uint32_t						SessionId;
-	uint8_t							Padding5[ 4 ];
+	uint8_t							Padding5[4];
 	ULARGE_INTEGER					AppCompatFlags;
 	ULARGE_INTEGER					AppCompatFlagsUser;
 	uintptr_t						pShimData;
@@ -161,18 +161,18 @@ struct _PEB {
 	uintptr_t						FlsCallback;
 	LIST_ENTRY						FlsListHead;
 	uintptr_t						FlsBitmap;
-	uint32_t						FlsBitmapBits[ 4 ];
+	uint32_t						FlsBitmapBits[4];
 	uint32_t						FlsHighIndex;
 	uintptr_t						WerRegistrationData;
 	uintptr_t						WerShipAssertPtr;
 	uintptr_t						pUnused;
 	uintptr_t						pImageHeaderHash;
 	uint32_t						TracingFlags;
-	uint8_t							Padding6[ 4 ];
+	uint8_t							Padding6[4];
 	uint64_t						CsrServerReadOnlySharedMemoryBase;
 	uintptr_t						TppWorkerpListLock;
 	LIST_ENTRY						TppWorkerpList;
-	uintptr_t						WaitOnAddressHashTable[ 128 ];
+	uintptr_t						WaitOnAddressHashTable[128];
 };
 
 struct LDR_DATA_TABLE_ENTRY {
@@ -184,7 +184,7 @@ struct LDR_DATA_TABLE_ENTRY {
 	uint32_t				SizeOfImage;
 	UNICODE_STRING			FullDllName;
 	UNICODE_STRING			BaseDllName;
-	uint8_t					FlagGroup[ 4 ];
+	uint8_t					FlagGroup[4];
 	uint32_t				Flags;
 	uint16_t				ObsoleteLoadCount;
 	uint16_t				TlsIndex;

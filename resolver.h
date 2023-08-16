@@ -16,25 +16,25 @@ public:
 	};
 
 public:
-	LagRecord* FindIdealRecord( AimPlayer* data );
-	LagRecord* FindLastRecord( AimPlayer* data );
+	LagRecord* FindIdealRecord(AimPlayer* data);
+	LagRecord* FindLastRecord(AimPlayer* data);
 
-	LagRecord *FindFirstRecord( AimPlayer *data );
+	LagRecord* FindFirstRecord(AimPlayer* data);
 
-	void OnBodyUpdate( Player* player, float value );
-	float GetAwayAngle( LagRecord* record );
+	void OnBodyUpdate(Player* player, float value);
+	float GetAwayAngle(LagRecord* record);
 
-	void MatchShot( AimPlayer* data, LagRecord* record );
-	void SetMode( LagRecord* record );
+	void MatchShot(AimPlayer* data, LagRecord* record);
+	void SetMode(LagRecord* record);
 
-	void ResolveAngles( Player* player, LagRecord* record );
-	void ResolveWalk( AimPlayer* data, LagRecord* record );
-	void ResolveStand( AimPlayer* data, LagRecord* record );
-	void StandNS( AimPlayer* data, LagRecord* record );
-	void ResolveAir( AimPlayer* data, LagRecord* record );
+	void ResolveAngles(Player* player, LagRecord* record);
+	void ResolveWalk(AimPlayer* data, LagRecord* record);
+	void ResolveStand(AimPlayer* data, LagRecord* record);
+	void StandNS(AimPlayer* data, LagRecord* record);
+	void ResolveAir(AimPlayer* data, LagRecord* record);
 
-	void AirNS( AimPlayer* data, LagRecord* record );
-	void ResolvePoses( Player* player, LagRecord* record );
+	void AirNS(AimPlayer* data, LagRecord* record);
+	void ResolvePoses(Player* player, LagRecord* record);
 
 public:
 	std::array< vec3_t, 64 > m_impacts;

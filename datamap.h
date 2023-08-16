@@ -4,7 +4,7 @@
 class datamap_t;
 
 // prototype.
-using inputfunc_t = void( __cdecl* )( void* data );
+using inputfunc_t = void(__cdecl*)(void* data);
 
 enum fieldtype_t {
 	FIELD_VOID = 0,			// No type or value
@@ -48,28 +48,28 @@ enum {
 class typedescription_t {
 public:
 	fieldtype_t				m_type;
-	const char*				m_name;
-	int						m_offset[ TD_OFFSET_COUNT ];
+	const char* m_name;
+	int						m_offset[TD_OFFSET_COUNT];
 	unsigned short			m_size;
 	short					m_flags;
-	const char*				m_ext_name;
-	void*					m_save_restore_ops;
+	const char* m_ext_name;
+	void* m_save_restore_ops;
 	inputfunc_t				m_input_func;
-	datamap_t*				m_td;
+	datamap_t* m_td;
 	int						m_bytes;
-	typedescription_t*		m_override_field;
+	typedescription_t* m_override_field;
 	int						m_override_count;
 	float					m_tolerance;
 private:
-	PAD( 0x8 );
+	PAD(0x8);
 };
 
 class datamap_t {
 public:
-	typedescription_t*	m_desc;
+	typedescription_t* m_desc;
 	int					m_size;
-	char const*			m_name;
-	datamap_t*			m_base;
+	char const* m_name;
+	datamap_t* m_base;
 	bool		        m_chains_validated;
 	bool				m_packed_offsets_computed;
 	int			        m_packed_size;

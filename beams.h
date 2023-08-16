@@ -7,33 +7,33 @@
 //public:
 //    PAD( 52 );       // 0x0
 //	int flags;       // 0x34
-//	PAD( 144 );      
+//	PAD( 144 );
 //	float die;       // 0xC8
-//	PAD( 20 );       
+//	PAD( 20 );
 //	float r;         // 0xE0
 //	float g;         // 0xE4
 //	float b;         // 0xE8
 //	PAD( 8 );
 //	float frameRate; // 0xF4
 //	float frame;     // 0xF8
-//}; 
+//};
 
 class Beam_t {
 public:
-    void    *unk_1; // probably 2-3 vmts?
-    void    *unk_2;
-    void    *unk_3;
+	void* unk_1; // probably 2-3 vmts?
+	void* unk_2;
+	void* unk_3;
 	vec3_t	m_Mins;
 	vec3_t	m_Maxs;
-	void    *m_queryHandleHalo;
+	void* m_queryHandleHalo;
 	float	m_haloProxySize;
-	Beam_t  *next;
+	Beam_t* next;
 	int		type;
 	int		flags;
 	int		numAttachments;
-	vec3_t	attachment[ MAX_BEAM_ENTS ];
+	vec3_t	attachment[MAX_BEAM_ENTS];
 	vec3_t	delta;
-	float	t;		
+	float	t;
 	float	freq;
 	float	die;
 	float	width;
@@ -47,14 +47,14 @@ public:
 	float	frameRate;
 	float	frame;
 	int		segments;
-	EHANDLE	entity[ MAX_BEAM_ENTS ];
-	int		attachmentIndex[ MAX_BEAM_ENTS ];
+	EHANDLE	entity[MAX_BEAM_ENTS];
+	int		attachmentIndex[MAX_BEAM_ENTS];
 	int		modelIndex;
 	int		haloIndex;
 	float	haloScale;
 	int		frameCount;
-	float	rgNoise[ NOISE_DIVISIONS + 1 ];
-	void    *trail;
+	float	rgNoise[NOISE_DIVISIONS + 1];
+	void* trail;
 	float	start_radius;
 	float	end_radius;
 	bool	m_bCalculatedNoise;
@@ -62,17 +62,17 @@ public:
 };
 
 struct BeamInfo_t {
-    int		   m_nType;
-	Entity     *m_pStartEnt;
+	int		   m_nType;
+	Entity* m_pStartEnt;
 	int		   m_nStartAttachment;
-	Entity     *m_pEndEnt;
+	Entity* m_pEndEnt;
 	int		   m_nEndAttachment;
 	vec3_t	   m_vecStart;
 	vec3_t	   m_vecEnd;
 	int		   m_nModelIndex;
-	const char *m_pszModelName;
+	const char* m_pszModelName;
 	int		   m_nHaloIndex;
-	const char *m_pszHaloName;
+	const char* m_pszHaloName;
 	float	   m_flHaloScale;
 	float	   m_flLife;
 	float	   m_flWidth;
@@ -93,35 +93,35 @@ struct BeamInfo_t {
 	float	   m_flStartRadius;
 	float	   m_flEndRadius;
 
-	__forceinline BeamInfo_t() { 
-		m_nType        = 0; // TE_BEAMPOINTS;
-		m_nSegments    = -1;
+	__forceinline BeamInfo_t() {
+		m_nType = 0; // TE_BEAMPOINTS;
+		m_nSegments = -1;
 		m_pszModelName = 0;
-		m_pszHaloName  = 0;
-		m_nModelIndex  = -1;
-		m_nHaloIndex   = -1;
-		m_bRenderable  = true;
-		m_nFlags       = 0;
+		m_pszHaloName = 0;
+		m_nModelIndex = -1;
+		m_nHaloIndex = -1;
+		m_bRenderable = true;
+		m_nFlags = 0;
 	}
 };
 
 class IViewRenderBeams {
 public:
 	enum indices : size_t {
-        DRAWBEAM         = 4,
-        CREATEBEAMPOINTS = 12,
-        UPDATEBEAMINFO   = 22
+		DRAWBEAM = 4,
+		CREATEBEAMPOINTS = 12,
+		UPDATEBEAMINFO = 22
 	};
 
-    __forceinline void DrawBeam( Beam_t *beam ) {
-        util::get_method< void (__thiscall *)( void *, Beam_t * ) >( this, DRAWBEAM )( this, beam );
-    }
+	__forceinline void DrawBeam(Beam_t* beam) {
+		util::get_method< void(__thiscall*)(void*, Beam_t*) >(this, DRAWBEAM)(this, beam);
+	}
 
-    __forceinline Beam_t *CreateBeamPoints( BeamInfo_t &beam_info ) {
-        return util::get_method< Beam_t *(__thiscall *)( void *, BeamInfo_t & ) >( this, CREATEBEAMPOINTS )( this, beam_info );
-    }
+	__forceinline Beam_t* CreateBeamPoints(BeamInfo_t& beam_info) {
+		return util::get_method< Beam_t * (__thiscall*)(void*, BeamInfo_t&) >(this, CREATEBEAMPOINTS)(this, beam_info);
+	}
 
-    __forceinline void UpdateBeamInfo( Beam_t *beam, BeamInfo_t &beam_info ) {
-        util::get_method< void (__thiscall *)( void *, Beam_t *, BeamInfo_t & ) >( this, UPDATEBEAMINFO )( this, beam, beam_info );
-    }
+	__forceinline void UpdateBeamInfo(Beam_t* beam, BeamInfo_t& beam_info) {
+		util::get_method< void(__thiscall*)(void*, Beam_t*, BeamInfo_t&) >(this, UPDATEBEAMINFO)(this, beam, beam_info);
+	}
 };
