@@ -38,6 +38,35 @@ void HVH::AntiAimPitch() {
 	}
 }
 
+void HVH::AntiLastMove() {
+	if (!g_menu.main.antiaim.enable.get()) {
+		return;
+	}
+
+	if (g_input.GetKeyState(g_menu.main.misc.fakewalk.get())) {
+		return;
+	}
+
+	if (g_cl.m_speed == 0) {
+		return;
+	}
+
+	// Static variable to count ticks across function calls
+	static int32_t ticksToStop = 0;
+
+	if (ticksToStop < 15) {
+		if (g_cl.m_flags & FL_ONGROUND) {
+			vec3_t velocity = g_cl.m_local->m_vecVelocity();
+
+			if (ticksToStop < 11 && !g_cl.m_packet) {
+				g_cl.m_cmd->m_view_angles.y = fabs(g_cl.m_local->m_flLowerBodyYawTarget());
+			}
+		}
+
+		ticksToStop++;
+	}
+}
+
 void HVH::AutoDirection() {
 	// constants.
 	constexpr float STEP{ 4.f };
@@ -671,6 +700,8 @@ void HVH::AntiAim() {
 
 	// set pitch.
 	AntiAimPitch();
+
+	AntiLastMove();
 
 	// if we have any yaw.
 	if (m_yaw > 0) {

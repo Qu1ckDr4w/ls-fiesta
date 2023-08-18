@@ -449,6 +449,7 @@ public:
 	PAD(0x12);				// 0x0329
 	float   m_min_pitch;        // 0x033C
 	PAD(0x4);					// 0x0340
+	bool	m_smooth_height_valid = false;
 }; // size: 0x344
 
 class CStudioHdr {
@@ -798,6 +799,29 @@ public:
 
 	__forceinline void GetEyePos(vec3_t* pos) {
 		util::get_method< void(__thiscall*)(decltype(this), vec3_t*) >(this, GETEYEPOS)(this, pos);
+	}
+
+	__forceinline vec3_t wpn_shoot_pos() {
+		using fn_t = void(__thiscall*)(decltype(this), vec3_t& pos);
+
+		vec3_t eye_pos{ };
+
+		auto state = this->m_PlayerAnimState();
+
+		if (state) {
+
+			auto backup = state->m_smooth_height_valid;
+			float backup2 = state->m_dip_cycle;
+			state->m_smooth_height_valid = false;
+			state->m_dip_cycle = std::clamp(state->m_dip_cycle, 0.f, 0.9f);
+
+			(*reinterpret_cast<fn_t**>(this))[277](this, eye_pos);
+
+			state->m_dip_cycle = backup2;
+			state->m_smooth_height_valid = backup;
+		}
+
+		return eye_pos;
 	}
 
 	__forceinline void ModifyEyePosition(CCSGOPlayerAnimState* state, vec3_t* pos) {

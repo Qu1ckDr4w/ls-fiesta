@@ -41,6 +41,7 @@ public:
 	Player* m_player;
 	float	  m_spawn;
 	records_t m_records;
+	int m_ticks_since_dormant;
 
 	// aimbot data.
 	hitboxcan_t m_hitboxes;
@@ -77,6 +78,7 @@ public:
 	void reset() {
 		m_player = nullptr;
 		m_spawn = 0.f;
+		m_ticks_since_dormant = 0;
 		m_walk_record = LagRecord{};
 		m_shots = 0;
 		m_missed_shots = 0;
@@ -175,8 +177,12 @@ public:
 	void think();
 	void find();
 	bool CheckHitchance(Player* player, const ang_t& angle);
+	void TargetSelectStart();
+	void TargetSelectEnd();
 	bool SelectTarget(LagRecord* record, const vec3_t& aim, float damage);
+	void DormantAimbot(LagRecord* record, CUserCmd* cmd);
 	void apply();
+	void updateshootposition();
 
 	// knifebot.
 	void knife();

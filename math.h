@@ -30,6 +30,7 @@ namespace math {
 		return angle;
 	}
 
+	float NormalizeYaw(float angle);
 	float ApproachAngle(float target, float value, float speed);
 	void  VectorAngles(const vec3_t& forward, ang_t& angles, vec3_t* up = nullptr);
 	void  AngleVectors(const ang_t& angles, vec3_t* forward, vec3_t* right = nullptr, vec3_t* up = nullptr);
@@ -61,5 +62,16 @@ namespace math {
 	template < typename t >
 	__forceinline void clamp(t& n, const t& lower, const t& upper) {
 		n = std::max(lower, std::min(n, upper));
+	}
+
+	template< class T, class Y >
+	FORCEINLINE T clamp2(T const& val, Y const& minVal, Y const& maxVal)
+	{
+		if (val < (T const&)minVal)
+			return (T const&)minVal;
+		else if (val > (T const&)maxVal)
+			return (T const&)maxVal;
+		else
+			return val;
 	}
 }

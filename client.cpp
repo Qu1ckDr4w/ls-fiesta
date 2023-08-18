@@ -14,6 +14,13 @@ ulong_t __stdcall Client::init(void* arg) {
 	return 1;
 }
 
+void Client::Optimize() {
+	g_csgo.m_engine->ExecuteClientCmd(XOR("r_jiggle_bones 0"));
+	g_csgo.m_engine->ExecuteClientCmd(XOR("r_drawtracers_firstperson 0"));
+	g_csgo.m_engine->ExecuteClientCmd(XOR("r_eyegloss 0"));
+	g_csgo.m_engine->ExecuteClientCmd(XOR("r_eyemove 0"));
+}
+
 void Client::UnlockHiddenConvars()
 {
 	if (!g_csgo.m_cvar)
@@ -23,6 +30,49 @@ void Client::UnlockHiddenConvars()
 	for (auto c = p->m_next; c != nullptr; c = c->m_next) {
 		c->m_flags &= ~FCVAR_DEVELOPMENTONLY;
 		c->m_flags &= ~FCVAR_HIDDEN;
+	}
+}
+
+//sigs
+#define sig_player_by_index "85 C9 7E 2A A1"
+#define sig_draw_server_hitboxes "55 8B EC 81 EC ? ? ? ? 53 56 8B 35 ? ? ? ? 8B D9 57 8B CE"
+
+void Client::draw_server_hitboxes() {
+	if (!g_csgo.m_engine->IsInGame())
+		return;
+
+	if (!g_cl.m_local || !g_cl.m_local->alive())
+		return;
+
+	if (!g_csgo.m_input->CAM_IsThirdPerson())
+		return;
+
+	auto get_player_by_index = [](int index) -> Player* { //i dont need this shit func for anything else so it can be lambda
+		typedef Player* (__fastcall* player_by_index)(int);
+		static auto player_index = pattern::find(PE::GetModule(HASH("server.dll")), sig_player_by_index).as<player_by_index>();
+
+		if (!player_index)
+			return false;
+
+		return player_index(index);
+		};
+
+	static auto fn = pattern::find(PE::GetModule(HASH("server.dll")), sig_draw_server_hitboxes).as<uintptr_t>();
+	auto duration = -1.f;
+	PVOID entity = nullptr;
+
+	entity = get_player_by_index(g_cl.m_local->index());
+
+	if (!entity)
+		return;
+
+	__asm {
+		pushad
+		movss xmm1, duration
+		push 0 // 0 - colored, 1 - blue
+		mov ecx, entity
+		call fn
+		popad
 	}
 }
 
@@ -148,7 +198,7 @@ void Client::ThirdPerson() {
 		float pitch_diff = target_pitch - current_pitch;
 
 		// Define a smoothing factor (adjust this as needed)
-		float smoothing_factor = 0.3f;
+		float smoothing_factor = 10.f;
 
 		// Apply smoothing to the yaw angle
 		current_yaw += yaw_diff * smoothing_factor;
@@ -164,6 +214,25 @@ void Client::ThirdPerson() {
 		*reinterpret_cast<float*>(uintptr_t(g_cl.m_local) + 0x31C4 + 0x8) = current_roll;
 		*reinterpret_cast<float*>(uintptr_t(g_cl.m_local) + 0x31C4) = current_pitch;
 	}
+}
+
+void Client::LerpSetup() {
+	float updaterate = g_csgo.cl_updaterate->GetFloat();
+
+	float minupdaterate = g_csgo.sv_minupdaterate->GetFloat();
+	float maxupdaterate = g_csgo.sv_maxupdaterate->GetFloat();
+
+	float min_interp = g_csgo.sv_client_min_interp_ratio->GetFloat();
+	float max_interp = g_csgo.sv_client_max_interp_ratio->GetFloat();
+
+	float flLerpAmount = g_csgo.cl_interp->GetFloat();
+	float flLerpRatio = g_csgo.cl_interp_ratio->GetFloat();
+	flLerpRatio = math::clamp2(flLerpRatio, min_interp, max_interp);
+	if (flLerpRatio == 0.0f)
+		flLerpRatio = 1.0f;
+
+	float updateRate = math::clamp2(updaterate, minupdaterate, maxupdaterate);
+	m_lerp = std::fmaxf(flLerpAmount, flLerpRatio / updateRate);
 }
 
 void Client::StartMove(CUserCmd* cmd) {
@@ -189,6 +258,9 @@ void Client::StartMove(CUserCmd* cmd) {
 	m_latency_ticks = game::TIME_TO_TICKS(m_latency);
 	m_server_tick = g_csgo.m_cl->m_server_tick;
 	m_arrival_tick = m_server_tick + m_latency_ticks;
+
+	// m_lerp = game::GetClientInterpAmount();
+	LerpSetup();
 
 	// processing indicates that the localplayer is valid and alive.
 	m_processing = m_local && m_local->alive();
@@ -243,6 +315,9 @@ void Client::BackupPlayers(bool restore) {
 void Client::DoMove() {
 	penetration::PenetrationOutput_t tmp_pen_data{ };
 
+	// backup strafe angles (we need them for input prediction)
+	m_strafe_angles = m_cmd->m_view_angles;
+
 	// run movement code before input prediction.
 	g_movement.JumpRelated();
 	g_movement.Strafe();
@@ -250,11 +325,11 @@ void Client::DoMove() {
 	g_movement.AutoPeek();
 	g_movement.AutoStop();
 
-	// backup strafe angles (we need them for input prediction)
-	m_strafe_angles = m_cmd->m_view_angles;
-
 	// predict input.
 	g_inputpred.run();
+
+	// p fixer.
+	g_aimbot.updateshootposition();
 
 	// restore original angles after input prediction
 	m_cmd->m_view_angles = m_view_angles;
@@ -417,6 +492,12 @@ void Client::UpdateAnimations() {
 	CCSGOPlayerAnimState* state = g_cl.m_local->m_PlayerAnimState();
 	if (!state)
 		return;
+
+	static const auto sv_cheats = g_csgo.m_cvar->FindVar(HASH("sv_cheats"));
+	sv_cheats->SetValue(1);
+
+	// stop landing animation.
+	g_cl.m_local->m_AnimOverlay()[5].m_cycle = 0.f;
 
 	// prevent model sway on player.
 	g_cl.m_local->m_AnimOverlay()[12].m_weight = 0.f;

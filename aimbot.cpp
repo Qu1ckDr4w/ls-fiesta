@@ -1,4 +1,5 @@
 #include "includes.h"
+#include <execution>
 
 Aimbot g_aimbot{ };;
 
@@ -509,7 +510,7 @@ void Aimbot::think() {
 
 	// run knifebot.
 	if (g_cl.m_weapon_type == WEAPONTYPE_KNIFE && g_cl.m_weapon_id != ZEUS) {
-			knife();
+		knife();
 		return;
 	}
 
@@ -961,7 +962,6 @@ bool AimPlayer::GetBestAimPosition(vec3_t& aim, float& damage, LagRecord* record
 	}
 
 	else {
-
 		dmg = g_menu.main.aimbot.minimal_damage.get();
 		if (g_input.GetKeyState(g_menu.main.aimbot.damage_override.get()))
 			dmg = g_menu.main.aimbot.damage_override_value.get();
@@ -1062,13 +1062,92 @@ bool AimPlayer::GetBestAimPosition(vec3_t& aim, float& damage, LagRecord* record
 }
 
 bool Aimbot::SelectTarget(LagRecord* record, const vec3_t& aim, float damage) {
+	if (damage > m_best_damage) {
+		m_best_damage = damage;
 
-		if (damage > m_best_damage) {
-			m_best_damage = damage;
-			return true;
+		std::vector<AimPlayer*> validTargets;
+
+		// Implement the logic to populate validTargets vector
+
+		auto sort_targets = [&](const AimPlayer* a, const AimPlayer* b) {
+			// Implement your sorting logic here
+			// Calculate FOV for player 'a'
+			float fov_a = math::GetFOV(g_cl.m_view_angles, g_cl.m_shoot_pos, a->m_player->WorldSpaceCenter());
+
+			// Calculate FOV for player 'b'
+			float fov_b = math::GetFOV(g_cl.m_view_angles, g_cl.m_shoot_pos, b->m_player->WorldSpaceCenter());
+
+			// Compare FOV values and return whether 'a' should come before 'b'
+			return fov_a < fov_b;
+			};
+
+		if (validTargets.size() > 1) {
+			std::sort(std::execution::par, validTargets.begin(), validTargets.end(), sort_targets);
+			while (validTargets.size() > 5) {
+				validTargets.pop_back();
+			}
 		}
 
+		for (AimPlayer* target : validTargets) {
+			LagRecord* front = target->m_records.front().get();
+
+			// Ensure front record is valid
+			if (!front || front->dormant() || front->immune() || !front->m_setup)
+				continue;
+
+			if (target->m_ticks_since_dormant <= 2)
+				continue;
+		}
+
+		return true;
+	}
+
 	return false;
+}
+
+__forceinline vec3_t GetHitboxPosition(LagRecord* record, int hitbox) {
+	BoneArray bone[128];
+	if (!record || hitbox < 0 || hitbox >= 128)
+		return vec3_t(0, 0, 0);
+
+	mstudiobbox_t* scan = g_csgo.m_model_info->GetStudioModel(record->m_player->GetModel())->GetHitboxSet(0)->GetHitbox(hitbox);
+	if (!scan)
+		return vec3_t(0, 0, 0);
+
+	vec3_t min, max, center;
+	math::VectorTransform(scan->m_mins, bone[scan->m_bone], min);
+	math::VectorTransform(scan->m_maxs, bone[scan->m_bone], max);
+
+	center = (min + max) * 0.5f;
+	return center;
+}
+
+void Aimbot::DormantAimbot(LagRecord* record, CUserCmd* cmd) {
+	if (!record || !cmd)
+		return;
+
+	auto me = g_cl.m_local;
+	if (!me)
+		return;
+
+	auto weapon = g_cl.m_weapon;
+	if (!weapon)
+		return;
+
+	vec3_t eye_position, shoot_pos;
+	me->GetEyePos(&eye_position);
+
+	vec3_t enemy_hitbox_position = GetHitboxPosition(record, 3);
+	CTraceFilterSimple filter;
+	CGameTrace trace;
+
+	g_csgo.m_engine_trace->TraceRay(Ray(eye_position, enemy_hitbox_position), MASK_SHOT, &filter, &trace);
+
+	if (record->dormant() && trace.hit()) {
+		if (weapon->GetWpnData()->m_weapon_type != WEAPONTYPE_KNIFE) {
+			cmd->m_buttons |= IN_ATTACK;
+		}
+	}
 }
 
 void Aimbot::apply() {
@@ -1109,4 +1188,31 @@ void Aimbot::apply() {
 		// set that we fired.
 		g_cl.m_shot = true;
 	}
+}
+
+void Aimbot::updateshootposition() {
+	const auto anim_state = g_cl.m_local->m_PlayerAnimState();
+	if (!anim_state)
+		return;
+
+	const auto backup = g_cl.m_local->m_flPoseParameter()[12];
+	const auto absorigin = g_cl.m_local->GetAbsOrigin();
+
+	// set pitch, rotation etc
+	g_cl.m_local->m_flPoseParameter()[12] = 0.5f;
+	g_cl.m_local->SetAbsAngles(g_cl.m_rotation);
+	g_cl.m_local->SetAbsOrigin(g_cl.m_local->m_vecOrigin());
+
+	// ??
+	if (g_cl.m_local->m_fFlags() & FL_ONGROUND) {
+		anim_state->m_ground = true;
+		anim_state->m_land = false;
+	}
+
+	// get corrected shootpos
+	g_cl.m_shoot_pos = g_cl.m_local->wpn_shoot_pos();
+
+	// set to backup
+	g_cl.m_local->SetAbsOrigin(absorigin);
+	g_cl.m_local->m_flPoseParameter()[12] = backup;
 }

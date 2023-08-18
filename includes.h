@@ -87,6 +87,7 @@ using ulong_t = unsigned long;
 #include "skins.h"
 #include "events.h"
 #include "shots.h"
+#include "animations.h"
 
 // gui includes.
 #include "json.h"

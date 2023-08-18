@@ -34,6 +34,7 @@ bool CSGO::init() {
 	m_engine_dll = PE::GetModule(HASH("engine.dll"));
 	m_vstdlib_dll = PE::GetModule(HASH("vstdlib.dll"));
 	m_tier0_dll = PE::GetModule(HASH("tier0.dll"));
+	m_server_dll = PE::GetModule(HASH("server.dll"));
 
 	// import winapi functions.
 	g_winapi.WideCharToMultiByte = PE::GetExport(m_kernel32_dll, HASH("WideCharToMultiByte")).as< WinAPI::WideCharToMultiByte_t >();
@@ -176,6 +177,11 @@ bool CSGO::init() {
 	// prediction pointers.
 	m_nPredictionRandomSeed = util::get_method(m_prediction, CPrediction::RUNCOMMAND).add(0x30).get< int* >();
 	m_pPredictionPlayer = util::get_method(m_prediction, CPrediction::RUNCOMMAND).add(0x54).get< Player* >();
+
+	sv_minupdaterate = g_csgo.m_cvar->FindVar(HASH("sv_minupdaterate"));
+	sv_maxupdaterate = g_csgo.m_cvar->FindVar(HASH("sv_maxupdaterate"));
+	sv_client_min_interp_ratio = g_csgo.m_cvar->FindVar(HASH("sv_client_min_interp_ratio"));
+	sv_client_max_interp_ratio = g_csgo.m_cvar->FindVar(HASH("sv_client_max_interp_ratio"));
 
 	// some weird tier0 stuff that prevents me from debugging properly...
 #ifdef _DEBUG

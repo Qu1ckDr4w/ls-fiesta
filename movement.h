@@ -15,6 +15,7 @@ public:
 	bool   m_invert;
 
 public:
+	void RotateMovementAimware(CUserCmd* cmd, ang_t wish_angle, ang_t old_angles);
 	void JumpRelated();
 	void Strafe();
 	void DoPrespeed();
@@ -25,6 +26,7 @@ public:
 	void QuickStop();
 	void AutoStop();
 	void FakeWalk();
+	void ClampMovementSpeed(float speed);
 };
 
 extern Movement g_movement;

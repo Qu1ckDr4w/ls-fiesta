@@ -39,6 +39,7 @@ public:
 	PE::Module m_vstdlib_dll;
 	PE::Module m_tier0_dll;
 	PE::Module m_serverbrowser_dll;
+	PE::Module m_server_dll;
 
 public:
 	// interface ptrs.
@@ -161,6 +162,11 @@ public:
 	Address UTIL_TraceLine;
 	Address CTraceFilterSimple_vmt;
 	Address CTraceFilterSkipTwoEntities_vmt;
+
+	ConVar* sv_minupdaterate;
+	ConVar* sv_maxupdaterate;
+	ConVar* sv_client_min_interp_ratio;
+	ConVar* sv_client_max_interp_ratio;
 
 	int* m_nPredictionRandomSeed;
 	Player* m_pPredictionPlayer;

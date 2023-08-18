@@ -86,6 +86,7 @@ void Hooks::FrameStageNotify(Stage_t stage) {
 
 		g_cl.Clantag();
 		g_skins.think();
+		g_cl.draw_server_hitboxes();
 	}
 
 	else if (stage == FRAME_NET_UPDATE_POSTDATAUPDATE_END) {

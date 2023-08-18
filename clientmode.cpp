@@ -6,8 +6,12 @@ bool Hooks::ShouldDrawParticles() {
 
 bool Hooks::ShouldDrawFog() {
 	// remove fog.
-	if (g_csgo.m_engine->IsInGame() || g_cl.m_processing)
+	if (g_csgo.m_engine->IsInGame() && !g_menu.main.visuals.fog.get())
 		return false;
+
+	else
+
+		return true;
 
 	return g_hooks.m_client_mode.GetOldMethod< ShouldDrawFog_t >(IClientMode::SHOULDDRAWFOG)(this);
 }

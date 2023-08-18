@@ -25,6 +25,13 @@ void math::NormalizeAngle(float& angle) {
 	angle = (angle < 0.f) ? angle + (360.f * rot) : angle - (360.f * rot);
 }
 
+float math::NormalizeYaw(float angle) {
+	if (!std::isfinite(angle))
+		angle = 0.f;
+
+	return std::remainderf(angle, 360.0f);
+}
+
 float math::ApproachAngle(float target, float value, float speed) {
 	float delta;
 

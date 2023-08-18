@@ -2,6 +2,51 @@
 
 Movement g_movement{ };;
 
+void Movement::RotateMovementAimware(CUserCmd* cmd, ang_t wish_angle, ang_t old_angles) {
+	// aimware movement fix, reversed by ph4ge/senator for gucci
+	if (old_angles.x != wish_angle.x || old_angles.y != wish_angle.y || old_angles.z != wish_angle.z) {
+		vec3_t wish_forward, wish_right, wish_up, cmd_forward, cmd_right, cmd_up;
+
+		auto viewangles = old_angles;
+		auto movedata = vec3_t(cmd->m_forward_move,
+			cmd->m_side_move,
+			cmd->m_up_move);
+		viewangles.normalize();
+
+		if (viewangles.z != 0.f) {
+			Player* pLocal = g_cl.m_local;
+
+			if (pLocal && !(pLocal->m_fFlags() & FL_ONGROUND))
+				movedata.y = 0.f;
+		}
+
+		wish_forward = wish_angle.ToVectors(&wish_right, &wish_up);
+		cmd_forward = viewangles.ToVectors(&cmd_right, &cmd_up);
+
+		float v8 = sqrt(wish_forward.x * wish_forward.x + wish_forward.y * wish_forward.y), v10 = sqrt(wish_right.x * wish_right.x + wish_right.y * wish_right.y), v12 = sqrt(wish_up.z * wish_up.z);
+
+		vec3_t wish_forward_norm(1.0f / v8 * wish_forward.x, 1.0f / v8 * wish_forward.y, 0.f),
+			wish_right_norm(1.0f / v10 * wish_right.x, 1.0f / v10 * wish_right.y, 0.f),
+			wish_up_norm(0.f, 0.f, 1.0f / v12 * wish_up.z);
+
+		float v14 = sqrt(cmd_forward.x * cmd_forward.x + cmd_forward.y * cmd_forward.y), v16 = sqrt(cmd_right.x * cmd_right.x + cmd_right.y * cmd_right.y), v18 = sqrt(cmd_up.z * cmd_up.z);
+
+		vec3_t cmd_forward_norm(1.0f / v14 * cmd_forward.x, 1.0f / v14 * cmd_forward.y, 1.0f / v14 * 0.0f),
+			cmd_right_norm(1.0f / v16 * cmd_right.x, 1.0f / v16 * cmd_right.y, 1.0f / v16 * 0.0f),
+			cmd_up_norm(0.f, 0.f, 1.0f / v18 * cmd_up.z);
+
+		float v22 = wish_forward_norm.x * movedata.x, v26 = wish_forward_norm.y * movedata.x, v28 = wish_forward_norm.z * movedata.x, v24 = wish_right_norm.x * movedata.y, v23 = wish_right_norm.y * movedata.y, v25 = wish_right_norm.z * movedata.y, v30 = wish_up_norm.x * movedata.z, v27 = wish_up_norm.z * movedata.z, v29 = wish_up_norm.y * movedata.z;
+
+		cmd->m_forward_move = cmd_forward_norm.x * v24 + cmd_forward_norm.y * v23 + cmd_forward_norm.z * v25 + (cmd_forward_norm.x * v22 + cmd_forward_norm.y * v26 + cmd_forward_norm.z * v28) + (cmd_forward_norm.y * v30 + cmd_forward_norm.x * v29 + cmd_forward_norm.z * v27);
+		cmd->m_side_move = cmd_right_norm.x * v24 + cmd_right_norm.y * v23 + cmd_right_norm.z * v25 + (cmd_right_norm.x * v22 + cmd_right_norm.y * v26 + cmd_right_norm.z * v28) + (cmd_right_norm.x * v29 + cmd_right_norm.y * v30 + cmd_right_norm.z * v27);
+		cmd->m_up_move = cmd_up_norm.x * v23 + cmd_up_norm.y * v24 + cmd_up_norm.z * v25 + (cmd_up_norm.x * v26 + cmd_up_norm.y * v22 + cmd_up_norm.z * v28) + (cmd_up_norm.x * v30 + cmd_up_norm.y * v29 + cmd_up_norm.z * v27);
+
+		cmd->m_forward_move = std::clamp(cmd->m_forward_move, -450.f, 450.f);
+		cmd->m_side_move = std::clamp(cmd->m_side_move, -450.f, 450.f);
+		cmd->m_up_move = std::clamp(cmd->m_up_move, -450.f, 450.f);
+	}
+}
+
 void Movement::JumpRelated() {
 	if (g_cl.m_local->m_MoveType() == MOVETYPE_NOCLIP)
 		return;
@@ -19,20 +64,19 @@ void Movement::JumpRelated() {
 
 void Movement::Strafe() {
 	vec3_t velocity;
-	float  delta, abs_delta, velocity_angle, velocity_delta, correct;
+	float  delta, abs_delta, velocity_delta, correct;
+
+	// don't strafe while we prolly want to jump scout..
+	// if (g_movement.m_slow_motion)
+	//    return;
 
 	// don't strafe while noclipping or on ladders..
 	if (g_cl.m_local->m_MoveType() == MOVETYPE_NOCLIP || g_cl.m_local->m_MoveType() == MOVETYPE_LADDER)
 		return;
 
-	// disable strafing while pressing shift.
-	// don't strafe if not holding primary jump key.
-	if ((g_cl.m_buttons & IN_SPEED) || !(g_cl.m_buttons & IN_JUMP) || (g_cl.m_flags & FL_ONGROUND))
-		return;
-
 	// get networked velocity ( maybe absvelocity better here? ).
 	// meh, should be predicted anyway? ill see.
-	velocity = g_cl.m_local->m_vecVelocity();
+	velocity = g_cl.m_local->m_vecAbsVelocity();
 
 	// get the velocity len2d ( speed ).
 	m_speed = velocity.length_2d();
@@ -52,12 +96,78 @@ void Movement::Strafe() {
 	// save our origin
 	m_origin = g_cl.m_local->m_vecOrigin();
 
+	// disable strafing while pressing shift.
+	if ((g_cl.m_buttons & IN_SPEED) || (g_cl.m_flags & FL_ONGROUND))
+		return;
+
 	// for changing direction.
 	// we want to change strafe direction every call.
 	m_switch_value *= -1.f;
 
 	// for allign strafer.
 	++m_strafe_index;
+
+	if (g_csgo.m_engine->IsInGame() || g_cl.m_processing) {
+		// took this idea from stacker, thank u !!!!
+		enum EDirections {
+			FORWARDS = 0,
+			BACKWARDS = 180,
+			LEFT = 90,
+			RIGHT = -90,
+			BACK_LEFT = 135,
+			BACK_RIGHT = -135
+		};
+
+		float wish_dir{ };
+
+		// get our key presses.
+		bool holding_w = g_cl.m_buttons & IN_FORWARD;
+		bool holding_a = g_cl.m_buttons & IN_MOVELEFT;
+		bool holding_s = g_cl.m_buttons & IN_BACK;
+		bool holding_d = g_cl.m_buttons & IN_MOVERIGHT;
+
+		// move in the appropriate direction.
+		if (holding_w) {
+			//    forward left
+			if (holding_a) {
+				wish_dir += (EDirections::LEFT / 2);
+			}
+			//    forward right
+			else if (holding_d) {
+				wish_dir += (EDirections::RIGHT / 2);
+			}
+			//    forward
+			else {
+				wish_dir += EDirections::FORWARDS;
+			}
+		}
+		else if (holding_s) {
+			//    back left
+			if (holding_a) {
+				wish_dir += EDirections::BACK_LEFT;
+			}
+			//    back right
+			else if (holding_d) {
+				wish_dir += EDirections::BACK_RIGHT;
+			}
+			//    back
+			else {
+				wish_dir += EDirections::BACKWARDS;
+			}
+
+			g_cl.m_cmd->m_forward_move = 0;
+		}
+		else if (holding_a) {
+			//    left
+			wish_dir += EDirections::LEFT;
+		}
+		else if (holding_d) {
+			//    right
+			wish_dir += EDirections::RIGHT;
+		}
+
+		g_cl.m_strafe_angles.y += math::NormalizeYaw(wish_dir);
+	}
 
 	// cancel out any forwardmove values.
 	g_cl.m_cmd->m_forward_move = 0.f;
@@ -66,13 +176,13 @@ void Movement::Strafe() {
 		return;
 
 	// get our viewangle change.
-	delta = math::NormalizedAngle(g_cl.m_cmd->m_view_angles.y - m_old_yaw);
+	delta = math::NormalizedAngle(g_cl.m_strafe_angles.y - m_old_yaw);
 
 	// convert to absolute change.
 	abs_delta = std::abs(delta);
 
 	// save old yaw for next call.
-	m_circle_yaw = m_old_yaw = g_cl.m_cmd->m_view_angles.y;
+	m_circle_yaw = m_old_yaw = g_cl.m_strafe_angles.y;
 
 	// set strafe direction based on mouse direction change.
 	if (delta > 0.f)
@@ -83,37 +193,32 @@ void Movement::Strafe() {
 
 	// we can accelerate more, because we strafed less then needed
 	// or we got of track and need to be retracked.
-
-	/*
-	* data struct
-	* 68 74 74 70 73 3a 2f 2f 73 74 65 61 6d 63 6f 6d 6d 75 6e 69 74 79 2e 63 6f 6d 2f 69 64 2f 73 69 6d 70 6c 65 72 65 61 6c 69 73 74 69 63 2f
-	*/
-
 	if (abs_delta <= m_ideal || abs_delta >= 30.f) {
 		// compute angle of the direction we are traveling in.
-		velocity_angle = math::rad_to_deg(std::atan2(velocity.y, velocity.x));
+		ang_t velocity_angle;
+		math::VectorAngles(velocity, velocity_angle);
 
 		// get the delta between our direction and where we are looking at.
-		velocity_delta = math::NormalizedAngle(g_cl.m_cmd->m_view_angles.y - velocity_angle);
+		velocity_delta = math::NormalizeYaw(g_cl.m_strafe_angles.y - velocity_angle.y);
 
 		// correct our strafe amongst the path of a circle.
-		correct = m_ideal2 * 2.f;
+		correct = m_ideal;
 
 		if (velocity_delta <= correct || m_speed <= 15.f) {
 			// not moving mouse, switch strafe every tick.
 			if (-correct <= velocity_delta || m_speed <= 15.f) {
-				g_cl.m_cmd->m_view_angles.y += (m_ideal * m_switch_value);
+				g_cl.m_strafe_angles.y += (m_ideal * m_switch_value);
 				g_cl.m_cmd->m_side_move = 450.f * m_switch_value;
 			}
 
 			else {
-				g_cl.m_cmd->m_view_angles.y = velocity_angle - correct;
+				g_cl.m_strafe_angles.y = velocity_angle.y - correct;
 				g_cl.m_cmd->m_side_move = 450.f;
 			}
 		}
 
 		else {
-			g_cl.m_cmd->m_view_angles.y = velocity_angle + correct;
+			g_cl.m_strafe_angles.y = velocity_angle.y + correct;
 			g_cl.m_cmd->m_side_move = -450.f;
 		}
 	}
@@ -190,6 +295,8 @@ void Movement::DoPrespeed() {
 	// apply data to usercmd.
 	g_cl.m_cmd->m_view_angles.y = m_circle_yaw;
 	g_cl.m_cmd->m_side_move = (step >= 0.f) ? -450.f : 450.f;
+	ang_t move_dir = g_cl.m_strafe_angles;
+	RotateMovementAimware(g_cl.m_cmd, move_dir, g_cl.m_cmd->m_view_angles);
 }
 
 bool Movement::GetClosestPlane(vec3_t& plane) {
@@ -430,6 +537,8 @@ void Movement::AutoPeek() {
 
 			if (distance < 14 && g_cl.m_local->m_vecVelocity().length() < 10.f) {
 				Movement::QuickStop();
+				ang_t move_dir = g_cl.m_strafe_angles;
+				RotateMovementAimware(g_cl.m_cmd, move_dir, g_cl.m_cmd->m_view_angles);
 				m_invert = false;
 			}
 		}
@@ -469,16 +578,22 @@ void Movement::QuickStop() {
 		g_cl.m_cmd->m_forward_move = 0.f;
 		g_cl.m_cmd->m_side_move = 0.f;
 	}
+	ang_t move_dir = g_cl.m_strafe_angles;
+	RotateMovementAimware(g_cl.m_cmd, move_dir, g_cl.m_cmd->m_view_angles);
 }
 
 void Movement::AutoStop() {
 	bool can_stop = g_menu.main.aimbot.autostop_always_on.get();
 	if ((can_stop) && g_aimbot.m_stop) {
 		Movement::QuickStop();
+		ang_t move_dir = g_cl.m_strafe_angles;
+		RotateMovementAimware(g_cl.m_cmd, move_dir, g_cl.m_cmd->m_view_angles);
 	}
 
 	if (g_input.GetKeyState(g_menu.main.misc.airstop.get()) && !(g_cl.m_flags & FL_ONGROUND)) {
 		Movement::QuickStop();
+		ang_t move_dir = g_cl.m_strafe_angles;
+		RotateMovementAimware(g_cl.m_cmd, move_dir, g_cl.m_cmd->m_view_angles);
 	}
 }
 
@@ -535,5 +650,31 @@ void Movement::FakeWalk() {
 	// zero forwardmove and sidemove.
 	if (ticks > ((max - 1) - g_csgo.m_cl->m_choked_commands) || !g_csgo.m_cl->m_choked_commands) {
 		g_cl.m_cmd->m_forward_move = g_cl.m_cmd->m_side_move = 0.f;
+	}
+}
+
+void Movement::ClampMovementSpeed(float speed) {
+	float final_speed = speed;
+
+	if (!g_cl.m_local || !g_cl.m_processing)
+		return;
+
+	if (!g_cl.m_cmd || !g_cl.m_processing)
+		return;
+
+	g_cl.m_cmd->m_buttons |= IN_SPEED;
+
+	float squirt = std::sqrtf((g_cl.m_cmd->m_forward_move * g_cl.m_cmd->m_forward_move) + (g_cl.m_cmd->m_side_move * g_cl.m_cmd->m_side_move));
+
+	if (squirt > speed) {
+		float squirt2 = std::sqrtf((g_cl.m_cmd->m_forward_move * g_cl.m_cmd->m_forward_move) + (g_cl.m_cmd->m_side_move * g_cl.m_cmd->m_side_move));
+
+		float cock1 = g_cl.m_cmd->m_forward_move / squirt2;
+		float cock2 = g_cl.m_cmd->m_side_move / squirt2;
+
+		auto Velocity = g_cl.m_local->m_vecVelocity().length_2d();
+
+		g_cl.m_cmd->m_forward_move = cock1 * final_speed;
+		g_cl.m_cmd->m_side_move = cock2 * final_speed;
 	}
 }

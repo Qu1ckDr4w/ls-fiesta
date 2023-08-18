@@ -552,7 +552,7 @@ public:
 	Dropdown	  skybox;
 	Dropdown	  world;
 	Slider        night_amount;
-	Checkbox	  fog; // fixa!
+	Checkbox	  fog;
 	Colorpicker	  fog_color;
 	Slider		  fog_start;
 	Slider		  fog_end;
@@ -1844,10 +1844,10 @@ public:
 		airduck.setup(XOR("duck in air"), XOR("airduck"));
 		RegisterElement(&airduck);
 
-		airstop.setup(XOR("air stop"), XOR("airstop")); // fixa!
+		airstop.setup(XOR("air stop"), XOR("airstop"));
 		RegisterElement(&airstop);
 
-		autopeek.setup(XOR("automatic peek"), XOR("autopeek")); // fixa!
+		autopeek.setup(XOR("automatic peek"), XOR("autopeek"));
 		RegisterElement(&autopeek);
 
 		autopeek_color.setup(XOR("autopeek color"), XOR("autopeek_color"), colors::burgundy);

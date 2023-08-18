@@ -26,9 +26,11 @@ public:
 	// hack thread.
 	static ulong_t __stdcall init(void* arg);
 
+	void Optimize();
 	void UnlockHiddenConvars();
 	void Clantag();
 	void ThirdPerson();
+	void LerpSetup();
 	void StartMove(CUserCmd* cmd);
 	void EndMove(CUserCmd* cmd);
 	void BackupPlayers(bool restore);
@@ -38,6 +40,7 @@ public:
 	void SetAngles();
 	void UpdateAnimations();
 	void KillFeed();
+	void draw_server_hitboxes();
 
 	void OnPaint();
 	void OnMapload();

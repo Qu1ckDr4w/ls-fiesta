@@ -51,6 +51,7 @@ public:
 
 public:
 	void IdealPitch();
+	void AntiLastMove();
 	void AntiAimPitch();
 	void AutoDirection();
 	void GetAntiAimDirection();
